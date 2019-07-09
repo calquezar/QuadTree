@@ -68,7 +68,7 @@ class QNode:
       return centers
     
   def getLeaves(self):
-    if(len(self.children)==0):
+    if(len(self.children)==0): # I am a leaf
       return [self]
     else:
       leaves = []
@@ -131,7 +131,17 @@ class QuadTree:
       node.children = [ch11,ch12,ch21,ch22]
       return node
     else:
-      node = QNode(x,y,w,h)
+      if(nodeID=="0"): #root node
+        if(len(points)>0): # there are points inside the root area
+          minx = QPoint.getMinX(points)
+          miny = QPoint.getMinY(points)
+          width = QPoint.getMaxX(points)-minx
+          height = QPoint.getMaxY(points)-miny
+          node = QNode(minx,miny,width,height)
+        else: # root node and no points
+          node = QNode(0,0,0,0) 
+      else: # leaf node
+        node = QNode(x,y,w,h)
       node.nodeID=nodeID
       node.points = points
       node.setCenterOfMass()
