@@ -5,10 +5,10 @@ Created on Tue Jul  9 09:40:03 2019
 
 @author: calquezar
 """
-
+###########################################################################
 from matplotlib import pyplot as plt
 from matplotlib import patches
-
+###########################################################################
 class QPoint:
   
   def __init__(self,posX,posY):
@@ -28,7 +28,6 @@ class QPoint:
   
   def getMaxY(points):
     return max([p.y for p in points])
-  
 ###########################################################################
 class QNode:
   
@@ -76,8 +75,6 @@ class QNode:
       for c in self.children:
         leaves+= c.getLeaves()
       return leaves
-      
-    
 ###########################################################################
 class QuadTree:
   
@@ -153,7 +150,6 @@ class QuadTree:
     plt.plot(x, y, 'ro',color='r',markersize=3)
     plt.show()
     return
-
 ##############################################################
 import random
 points = [QPoint(random.uniform(0, 10), random.uniform(0, 10)) for x in range(10)]
