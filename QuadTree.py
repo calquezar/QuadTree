@@ -22,6 +22,9 @@ class QPoint:
   def dist(self,p):
     return math.sqrt((self.x-p.x)**2+(self.y-p.y)**2)
   
+  def toArray(self):
+    return [self.x,self.y]
+  
   def arrayToList(points):
     return [QPoint(p[0],p[1]) for p in points]
   
