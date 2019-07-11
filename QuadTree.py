@@ -8,6 +8,8 @@ Created on Tue Jul  9 09:40:03 2019
 ###########################################################################
 from matplotlib import pyplot as plt
 from matplotlib import patches
+import math
+from shapely.geometry import Polygon
 ###########################################################################
 class QPoint:
   
@@ -16,6 +18,15 @@ class QPoint:
     self.y=posY
   def __str__(self):
     return "(x: "+str(self.x)+", y: "+str(self.y)+")"
+  
+  def dist(self,p):
+    return math.sqrt((self.x-p.x)**2+(self.y-p.y)**2)
+  
+  def arrayToList(points):
+    return [QPoint(p[0],p[1]) for p in points]
+  
+  def listToArray(points):
+    return [[p.x,p.y] for p in points]
   
   def getMinX(points):
     return min([p.x for p in points])
@@ -87,6 +98,50 @@ class QuadTree:
       return self.root.__str__()
     else:
       return "Empty tree"
+
+  def rectangle(self,x,y,width,height):
+    """
+        (x3,y3) +-------+(x2,y2)
+                |       |
+                |       |
+        (x0,y0) +-------+ (x1,y1)
+    """
+    x0 = x
+    y0 = y
+    x1 = x+width
+    y1 = y
+    x2 = x+width
+    y2 = y+height
+    x3 = x
+    y3 = y+height
+    return Polygon([(x0,y0),(x1,y1),(x2,y2),(x3,y3)])
+  
+  def findPoints(self, p, radius):
+    candidates = self.findPointsSquareAtNode(self.root,p,radius)
+    neighbours = []
+    for q in candidates:
+      if (p.dist(q)<=radius):
+        neighbours.append(q)
+    return neighbours
+  
+  def findPointsSquareAtNode(self,node,p,radius):
+    points = []
+    npos= node.position
+    rect1 = self.rectangle(npos.x,npos.y,node.width,node.height)
+    rect2 = self.rectangle(p.x-radius,p.y-radius,2*radius,2*radius)
+    if(rect1.intersects(rect2)):
+      if(len(node.points)==0): # is an empty leaf
+        return points
+      elif (len(node.children)==0): # is a leaf and has points
+        neighbours = [q for q in node.points if ((q.dist(p)<radius)&(q.dist(p)>0))] # revisar que p sea distinto de q
+        points += neighbours
+        return points
+      else: # is a node with more than one point
+        for c in node.children:
+          points += self.findPointsSquareAtNode(c,p,radius)
+        return points
+    else:
+      return points
     
   def generateTree(self,points,x=0,y=0,w=0,h=0,nodeID="0"):
 
@@ -148,7 +203,7 @@ class QuadTree:
       return node
 
   def plot(self):
-    fig = plt.figure(figsize=(12, 8))
+    fig = plt.figure(figsize=(12, 12))
     plt.title("Quadtree")
     ax = fig.add_subplot(111)
     leaves = self.root.getLeaves()
@@ -159,10 +214,19 @@ class QuadTree:
     y = [point.y for point in self.root.points]
     plt.plot(x, y, 'ro',color='r',markersize=3)
     plt.show()
-    return
+    return ax
 ##############################################################
-import random
-points = [QPoint(random.uniform(0, 10), random.uniform(0, 10)) for x in range(10)]
-q = QuadTree(points,1)
-print(q)
-q.plot()
+#import random
+#random.seed(10)
+#points = [QPoint(random.uniform(0, 10), random.uniform(0, 10)) for x in range(10)]
+#q = QuadTree(points,1)
+##print(q)
+#
+## test points in a circle
+#ax = q.plot()
+#x = 8.6
+#y = 6
+#radius = 4
+#print(len(q.findPoints(QPoint(x,y),radius)))
+#circle = plt.Circle((x,y), radius, color='r',fill=False)
+#ax.add_artist(circle)
